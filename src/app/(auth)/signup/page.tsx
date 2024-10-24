@@ -68,11 +68,10 @@ const LoginPage = () => {
               title: "Success",
               description: "Username is unique",
               type: "background",
-
             })
           } else {
             toast({
-              title: "Error",
+              title: "Failure",
               description: response.data.message,
               type: "background",
               variant: "destructive"
@@ -104,7 +103,7 @@ const LoginPage = () => {
           description: response.data.message,
           type: "background"
         })
-        router.replace(`/verification/${username}`);
+        router.replace(`/verify/${username}`);
       } else {
         toast({
           title: "Failure",
@@ -116,7 +115,7 @@ const LoginPage = () => {
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({
-        title: "Failure",
+        title: "Error",
         description: axiosError.response?.data.message || "Error signing up",
         type: "background",
         variant: "destructive"
