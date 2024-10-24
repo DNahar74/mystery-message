@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
-const LoginPage = () => {
+const SignupPage = () => {
   const router = useRouter();
 
   const [username, setUsername] = useState('');
@@ -135,7 +135,7 @@ const LoginPage = () => {
           <p className="mb-4">Sign up to start your anonymous adventure</p>
         </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 flex flex-col">
             <FormField
               name="username"
               control={form.control}
@@ -181,7 +181,7 @@ const LoginPage = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isSubmitting || isCheckingUsername}>
+            <Button className="w-fit mx-auto" type="submit" disabled={isSubmitting || isCheckingUsername}>
               {
                 isSubmitting? (<Loader2 className="mr-2 h-4 w-4 animate-spin"/>) : "Sign up"
               }
@@ -192,7 +192,7 @@ const LoginPage = () => {
           <p>
             Already a member?{' '}
             <Link href="/login" className="text-blue-600 hover:text-blue-800">
-              Sign in
+              Login
             </Link>
           </p>
         </div>
@@ -201,4 +201,4 @@ const LoginPage = () => {
   )
 }
 
-export default LoginPage
+export default SignupPage
