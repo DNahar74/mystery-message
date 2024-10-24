@@ -109,7 +109,7 @@ const SignupPage = () => {
         <div className="text-center mt-4">
           <p>
             Not a member?{' '}
-            <Link href="/login" className="text-blue-600 hover:text-blue-800">
+            <Link href="/signup" className="text-blue-600 hover:text-blue-800">
               Sign up
             </Link>
           </p>

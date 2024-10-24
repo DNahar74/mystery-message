@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       type: "credentials",
       credentials: {
-        email: { label: "Email", type: "email"},
+        identifier: { label: "Email", type: "email"},
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials: any): Promise<any> {
@@ -25,8 +25,8 @@ export const authOptions: NextAuthOptions = {
         try {
           const user = await UserModel.findOne({
             $or: [
-              { email: credentials.identifier.email },
-              { username: credentials.identifier.email }
+              { email: credentials.identifier },
+              { username: credentials.identifier }
             ]
           });
 
