@@ -30,5 +30,7 @@ export const config = {
     '/',
     '/login',
     '/signup',
+    '/verify',
+    '/verify/(.*)'        // (.*) matches all sub-paths
   ]
 }
