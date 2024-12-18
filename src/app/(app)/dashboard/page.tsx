@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import MessageCard from "@/components/myComponents/MessageCard";
@@ -54,7 +53,7 @@ const Dashboard = () => {
     } finally {
       setIsSwitchLoading(false);
     }
-  }, [setValue])
+  }, [setValue, toast])
 
   const fetchMessages = useCallback(async (refresh: boolean = false) => {
     setIsLoading(true);
@@ -95,7 +94,7 @@ const Dashboard = () => {
       setIsLoading(false);
       setIsSwitchLoading(false);
     }
-  }, [setIsLoading, setMessages])
+  }, [setIsLoading, toast])
 
   useEffect(() => {
     if (!session || !session.user) return;

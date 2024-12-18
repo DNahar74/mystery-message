@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 // Use of useDebounceValue here ::
 // If we didn't add this, we would be checking if the username is unique, everytime the username field was changed
 // This would lead to unnecessary requests when the user has not finished typing the username
@@ -91,7 +90,7 @@ const SignupPage = () => {
       }
     }
     checkUsernameIsUnique();
-  }, [username]);
+  }, [username, toast]);
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     setIsSubmitting(true);
