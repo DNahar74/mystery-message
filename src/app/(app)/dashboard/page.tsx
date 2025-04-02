@@ -59,8 +59,9 @@ const Dashboard = () => {
     setIsLoading(true);
     setIsSwitchLoading(true);
     try {
-      const response = await axios.get('/api/acceptMessages');
+      const response = await axios.get('/api/getMessages');
       if (response.data.success) {
+        setMessages(response.data.messages);
         toast({
           title: "Success",
           description: response.data.message,
@@ -131,7 +132,7 @@ const Dashboard = () => {
 
   const { username } = session.user as User;
 
-  const baseUrl = `${window.location.protocol}//${window.location.hostname}`;
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
   const profileUrl = `${baseUrl}/u/${username}`;
 
   const copyToClipboard = () => {
