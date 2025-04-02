@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mystery Message
 
-## Getting Started
+Mystery Message is a secure and anonymous messaging platform built using **Next.js**. It allows users to send and receive messages without revealing their identities, ensuring a fun and confidential communication experience.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🔒 **Anonymous Messaging** – Send messages without exposing your identity.
+- 🎨 **User-Friendly Interface** – Simple and intuitive design for seamless interaction.
+- 🔐 **Secure Communication** – Ensures privacy and safety while messaging.
+- ⚡ **Fast & Responsive** – Optimized for speed and performance.
+
+## 🛠️ Technologies Used
+
+- **Frontend:** Next.js, React.js, Tailwind CSS
+- **Backend:** Next.js API Routes, Node.js
+- **Database:** MongoDB
+- **Authentication:** JWT (Next Auth Credentials Provider)
+
+## 📌 Prerequisites
+
+Before setting up the project, ensure you have the following installed:
+
+- [Node.js](https://nodejs.org/) (v14 or higher recommended)
+- npm or [Yarn](https://yarnpkg.com/)
+- MongoDB
+
+## 🔧 Installation
+
+### 1️⃣ Clone the Repository
+
+```sh
+git clone https://github.com/DNahar74/mystery-message.git
+cd mystery-message
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2️⃣ Install Dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Using npm:
+```sh
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Using Yarn:
+```sh
+yarn install
+```
 
-## Learn More
+### 3️⃣ Set Up Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env` file in the project root and configure necessary environment variables:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sh
+MONGODB_URI=your_mongodb_connection_string
+RESEND_API_KEY=your_resend_API_key
+NEXTAUTH_SECRET=your_secret_key
+OPENAI_API_KEY=xxxxxxxxx
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 4️⃣ Run the Development Server
 
-## Deploy on Vercel
+Using npm:
+```sh
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Using Yarn:
+```sh
+yarn dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🔧 Building & Deployment
+
+To create a production-ready build:
+
+Using npm:
+```sh
+npm run build
+npm start
+```
+
+Using Yarn:
+```sh
+yarn build
+yarn start
+```
+
+For deployment, consider hosting on **Vercel**, **Netlify**, or **Docker-based servers**.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.
+
+## 📞 Contact
+
+For queries, feedback, or suggestions:
+- **GitHub Issues:** [Submit here](https://github.com/DNahar74/mystery-message/issues)
+- **Email:** nahardarsh55@gmail.com
+
+---
+
+*Happy Messaging! 🎉*
+
