@@ -1,208 +1,235 @@
-'use client'
+"use client";
 
-import MessageCard from "@/components/myComponents/MessageCard";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios, { AxiosError } from "axios";
+import { Loader2, RefreshCcw, Mail, Copy } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { User } from "next-auth";
+
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Message } from "@/models/User.model"
+import MessageCard from "@/components/myComponents/MessageCard";
+import { Message } from "@/models/User.model";
 import { acceptMessageSchema } from "@/schemas/acceptMessage.schema";
 import { ApiResponse } from "@/types/ApiResponse";
-import { zodResolver } from "@hookform/resolvers/zod";
-import axios, { AxiosError } from "axios";
-import { Loader2, RefreshCcw } from "lucide-react";
-import { User } from "next-auth";
-import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react"
-import { useForm } from "react-hook-form";
 
 const Dashboard = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSwitchLoading, setIsSwitchLoading] = useState(false);
-
-  const {toast} = useToast();
-
-  const handleDeleteMessage = (messageId: string) => {
-    setMessages(messages.filter(m => m._id !== messageId));
-  }
-
-  const {data: session} = useSession();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSwitchLoading, setIsSwitchLoading] = useState<boolean>(false);
+  const [profileUrl, setProfileUrl] = useState<string>("");
+  const { toast } = useToast();
+  const { data: session } = useSession();
 
   const form = useForm({
-    resolver: zodResolver(acceptMessageSchema)
-  })
+    resolver: zodResolver(acceptMessageSchema),
+  });
+  const { register, watch, setValue } = form;
+  const acceptMessages = watch("acceptMessages");
 
-  const {register, watch, setValue} = form;
-
-  const acceptMessages = watch('acceptMessages');
-
-  const fetchAcceptMessages = useCallback(async () => {
-    setIsSwitchLoading(true);
-    try {
-      const response = await axios.get('/api/acceptMessages');
-      setValue('acceptMessages', response.data.isAcceptingMessages);
-    } catch (error) {
+  const handleApiError = useCallback(
+    (error: unknown, defaultMessage: string) => {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({
         title: "Error",
-        description: axiosError.response?.data.message || "failed to fetch status",
-        type: "background",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSwitchLoading(false);
-    }
-  }, [setValue, toast])
+        description: axiosError.response?.data.message || defaultMessage,
+        variant: "destructive",
+      });
+    },
+    [toast]
+  );
 
-  const fetchMessages = useCallback(async (refresh: boolean = false) => {
-    setIsLoading(true);
-    setIsSwitchLoading(true);
+  const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get('/api/getMessages');
-      if (response.data.success) {
-        setMessages(response.data.messages);
-        toast({
-          title: "Success",
-          description: response.data.message,
-          type: "background"
-        })
-      } else {
-        toast({
-          title: "Failure",
-          description: response.data.message,
-          type: "background",
-          variant: "destructive"
-        })
-      }
+      setIsLoading(true);
+      const [messagesRes, settingsRes] = await Promise.all([
+        axios.get<ApiResponse>("/api/getMessages"),
+        axios.get<ApiResponse>("/api/acceptMessages"),
+      ]);
 
-      if (refresh) {
-        toast({
-          title: "Messages refreshed",
-          description: "showing latest messages",
-          type: "background"
-        })
+      if (messagesRes.data.success) {
+        setMessages(messagesRes.data.messages || []);
+      }
+      if (settingsRes.data.success) {
+        setValue("acceptMessages", settingsRes.data.isAcceptingMessages);
       }
     } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: "Error",
-        description: axiosError.response?.data.message || "Error fetching messages",
-        type: "background",
-        variant: "destructive"
-      })
+      handleApiError(error, "Failed to fetch data");
     } finally {
       setIsLoading(false);
-      setIsSwitchLoading(false);
     }
-  }, [setIsLoading, toast])
+  }, [setValue, handleApiError]);
 
-  useEffect(() => {
-    if (!session || !session.user) return;
-    fetchMessages();
-    fetchAcceptMessages();
-  }, [session, setValue, fetchAcceptMessages, fetchMessages])
-
-  if (!session || !session.user) {
-    return <div></div>;
-  }
-
-  const handleSwitchChange = async () => {
-    setIsSwitchLoading(true);
+  const refreshMessages = useCallback(async () => {
     try {
-      const response = await axios.patch('/api/acceptMessages', {acceptMessages: !acceptMessages});
-      setValue('acceptMessages', response.data.isAcceptingMessages);
+      setIsLoading(true);
+      const response = await axios.get<ApiResponse>("/api/getMessages");
+      if (response.data.success) {
+        setMessages(response.data.messages || []);
+        toast({
+          title: "Messages refreshed",
+          description: "Showing latest messages",
+        });
+      }
+    } catch (error) {
+      handleApiError(error, "Failed to refresh messages");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast, handleApiError]);
+
+  const handleDeleteMessage = useCallback((messageId: string) => {
+    setMessages((prev) => prev.filter((m) => m._id !== messageId));
+  }, []);
+  const copyProfileUrl = useCallback(() => {
+    navigator.clipboard.writeText(profileUrl);
+    toast({
+      title: "Copied!",
+      description: "Profile link copied to clipboard",
+    });
+  }, [profileUrl, toast]);
+
+  const toggleMessageAcceptance = useCallback(async () => {
+    try {
+      setIsSwitchLoading(true);
+      const response = await axios.patch<ApiResponse>("/api/acceptMessages", {
+        acceptMessages: !acceptMessages,
+      });
+      setValue("acceptMessages", response.data.isAcceptingMessages);
       toast({
         title: "Status changed",
-        description: `You are ${response.data.isAcceptingMessages? '' : 'not '}accepting messages.`,
-        type: "background"
-      })
+        description: `You are ${
+          response.data.isAcceptingMessages ? "now" : "no longer"
+        } accepting messages.`,
+      });
     } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: "Error",
-        description: axiosError.response?.data.message || "failed to change status",
-        type: "background",
-        variant: "destructive"
-      })
+      handleApiError(error, "Failed to update settings");
     } finally {
       setIsSwitchLoading(false);
     }
-  }
+  }, [acceptMessages, setValue, toast, handleApiError]);
 
-  const { username } = session.user as User;
+  useEffect(() => {
+    if (session?.user) {
+      const { username } = session.user as User;
+      setProfileUrl(
+        `${window.location.protocol}//${window.location.host}/u/${username}`
+      );
+      fetchData();
+    }
+  }, [session?.user, fetchData]);
 
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  const profileUrl = `${baseUrl}/u/${username}`;
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(profileUrl);
-    toast({
-      title: "Link copied",
-      description: "Your profile URL has been copied to your clipboard.",
-      type: "background"
-    })
-  }
+  if (!session?.user) return null;
 
   return (
-    <div className="my-8 mx-4 md:mx-8 lg:mx-auto p-6 bg-white rounded w-full max-w-6xl">
-      <h1 className="text-4xl font-bold mb-4">User Dashboard</h1>
+    <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-bold">Message Dashboard</h1>
+        <p className="text-muted-foreground">
+          Manage your profile and incoming messages
+        </p>
+      </header>
 
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold mb-2">Copy Your Unique Link</h2>{' '}
-        <div className="flex items-center">
-          <input
-            type="text"
-            value={profileUrl}
-            disabled
-            className="input input-bordered w-full p-2 mr-2"
-          />
-          <Button onClick={copyToClipboard}>Copy</Button>
+      <section className="space-y-4 rounded-lg border p-6">
+        <h2 className="text-xl font-semibold">Profile Settings</h2>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <label htmlFor="profile-url" className="block text-sm font-medium">
+              Your Profile Link
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="profile-url"
+                type="text"
+                value={profileUrl}
+                readOnly
+                className="flex-1 rounded-md border bg-muted px-3 py-2 text-sm"
+              />
+              <Button variant="secondary" onClick={copyProfileUrl}>
+                <Copy className="mr-2 h-4 w-4" />
+                Copy
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">
+              Message Settings
+            </label>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Switch
+                  {...register("acceptMessages")}
+                  checked={acceptMessages}
+                  onCheckedChange={toggleMessageAcceptance}
+                  disabled={isSwitchLoading}
+                  aria-label="Toggle message acceptance"
+                />
+                <span className="text-sm">
+                  {acceptMessages
+                    ? "Accepting messages"
+                    : "Not accepting messages"}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refreshMessages}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCcw className="mr-2 h-4 w-4" />
+                )}
+                Refresh
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="mb-4">
-        <Switch
-          {...register('acceptMessages')}
-          checked={acceptMessages}
-          onCheckedChange={handleSwitchChange}
-          disabled={isSwitchLoading}
-        />
-        <span className="ml-2">
-          Accept Messages: {acceptMessages ? 'On' : 'Off'}
-        </span>
-      </div>
       <Separator />
 
-      <Button
-        className="mt-4"
-        variant="outline"
-        onClick={(e) => {
-          e.preventDefault();
-          fetchMessages(true);
-        }}
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <RefreshCcw className="h-4 w-4" />
-        )}
-      </Button>
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {messages.length > 0 ? (
-          messages.map((message) => (
-            <MessageCard
-              key={message._id as string || ''}
-              message={message}
-              onMessageDelete={handleDeleteMessage}
-            />
-          ))
-        ) : (
-          <p>No messages to display.</p>
-        )}
-      </div>
-    </div>
-  )
-}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Your Messages</h2>
+          <span className="text-sm text-muted-foreground">
+            {messages.length} message{messages.length !== 1 ? "s" : ""}
+          </span>
+        </div>
 
-export default Dashboard
+        {messages.length > 0 ? (
+          <div className="grid gap-4">
+            {messages.map((message) => (
+              <MessageCard
+                key={message._id as string}
+                message={message}
+                onMessageDelete={handleDeleteMessage}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-lg border py-12 text-center">
+            <Mail className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="text-lg font-medium">No messages yet</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Share your profile link to start receiving messages
+            </p>
+            <Button variant="ghost" className="mt-4" onClick={refreshMessages}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Check for new messages
+            </Button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+};
+
+export default Dashboard;
