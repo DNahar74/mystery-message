@@ -22,18 +22,19 @@ export async function GET(): Promise<NextResponse<ApiResponse>> {
 
     const userId = new mongoose.Types.ObjectId(user._id);
 
+    const existingUser = await UserModel.findById(userId);
+    if (!existingUser) {
+      return NextResponse.json({success: false, message: "User not found"}, {status: 404});
+    }
+
     const foundUser = await UserModel.aggregate([
-      { $match: {id: userId}},
+      { $match: {_id: userId}},
       { $unwind: '$messages'},
       { $sort: {'messages.createdAt': -1}},
       { $group: {_id: '$_id', messages: {$push: '$messages'}}}
     ]);
 
-    if (!foundUser || foundUser.length === 0) {
-      return NextResponse.json({success: false, message: "User not found"}, {status: 404});
-    }
-
-    return NextResponse.json({success: true, message: "User messages found", messages: foundUser[0].messages}, {status: 200})
+    return NextResponse.json({success: true, message: "User messages found", messages: foundUser[0]?.messages || []}, {status: 200})
   } catch (error) {
     console.error("Failed to get user status ::\n"+ error);
     return NextResponse.json({success: false, message: "Failed to get user messages"}, {status: 500});

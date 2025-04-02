@@ -9,7 +9,7 @@ import { ApiResponse } from "@/types/ApiResponse";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import UserModel from "@/models/User.model";
 
-export async function DELETE({params}: {params: {messageId: string}}): Promise<NextResponse<ApiResponse>> {
+export async function DELETE(req: Request, {params}: {params: {messageId: string}}): Promise<NextResponse<ApiResponse>> {
   await dbConnect();
   const messageId = params.messageId;
 
